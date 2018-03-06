@@ -1,31 +1,32 @@
+
 /*
   Tarve: MMA7455:n X+Z-akselin muutokset heijastuvat moottoriin siten että liike kompensoi asentoa siten että asento pysyy vakiona (=0).
 */
 #include <Wire.h>
-
-/*********************************/
-
-#define CMD_ASD   0
-#define CMD_START 1
-#define CMD_STOP  2
-#define CMD_PLUS  3
-#define CMD_MINUS 4
-
-/*********************************/
-
-#define MOTOR_V_MAX 5
-#define MOTOR_PIN 9
-
-int motorPrs = 40;
-int motorVal;
-int MotorIn;
-
-/*********************************/
-
-#define INCOMING_BUFFER_LENGTH 5
-
-unsigned int incomingBytesIdx = 0;
-int *incomingBytesBuffer = (int*)malloc(INCOMING_BUFFER_LENGTH);
+  
+  /*********************************/
+  
+  #define CMD_ASD   0
+  #define CMD_START 1
+  #define CMD_STOP  2
+  #define CMD_PLUS  3
+  #define CMD_MINUS 4
+  
+  /*********************************/
+  
+  #define MOTOR_V_MAX 5
+  #define MOTOR_PIN 9
+  
+  int motorPrs = 99;
+  int motorVal;
+  int MotorIn;
+  
+  /*********************************/
+  
+  #define INCOMING_BUFFER_LENGTH 5
+  
+  unsigned int incomingBytesIdx = 0;
+  int *incomingBytesBuffer = (int*)malloc(INCOMING_BUFFER_LENGTH);
 
 /*********************************/
 
@@ -87,6 +88,7 @@ void start() {
 //  Serial.println("STARTING");
   running = true;
   digitalWrite(LED_BUILTIN, HIGH);
+  setMotorPrs(motorPrs);
 }
 void stop() {
 //  Serial.println("STOPPING");
@@ -104,13 +106,13 @@ void setup() {
 
   //  TCCR1B = TCCR1B & 0b11111000 | 0x02;
 
-  mma7455 = MMA_7455();
+//  mma7455 = MMA_7455();
 
-  mma7455.initSensitivity( MMA_7455_sensitivity );
-  mma7455.calibrateOffset( MMA_7455_x_offset
-                           , MMA_7455_y_offset
-                           , MMA_7455_z_offset );
-  stop();
+//  mma7455.initSensitivity( MMA_7455_sensitivity );
+//  mma7455.calibrateOffset( MMA_7455_x_offset
+//                           , MMA_7455_y_offset
+//                           , MMA_7455_z_offset );
+  start();
 }
 
 int itr = 0;
@@ -120,16 +122,16 @@ void loop() {
     handleIncomingByte(Serial.read());
   }
 
-  __AccStruct_fromMMA7455( &accVal, &mma7455 );
-  accVal.zg = accVal.z - MMA_7455_gravity_offset;
+  //__AccStruct_fromMMA7455( &accVal, &mma7455 );
+  //accVal.zg = accVal.z - MMA_7455_gravity_offset;
 
   if ( itr % 200 == 0 ) {
-    __AccStruct_toSerialPlot( &accVal );
-    char ay  = abs(accVal.y);
-    bool neg = accVal.y < 0;
-    if ( ay > 10 ) {
+//    __AccStruct_toSerialPlot( &accVal );
+//    char ay  = abs(accVal.y);
+//    bool neg = accVal.y < 0;
+//    if ( ay > 10 ) {
 //      Serial.println("Tilted");
-    }
+//    }
 
   }
 
@@ -137,9 +139,9 @@ void loop() {
     analogWrite( MOTOR_PIN, motorVal );
 
     if ( itr % 10000 == 0 ) {
-//      Serial.print(motorPrs);
-//      Serial.print("% = ");
-//      Serial.println(motorVal);
+      Serial.print(motorPrs);
+      Serial.print("% = ");
+      Serial.println(motorVal);
     }
   }
 }
